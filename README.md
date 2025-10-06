@@ -1,5 +1,5 @@
 ⚙️ Requirements
-Proteus 7.0
+Proteus 7.0,
 MicroShip Studio for implementation
 
 
