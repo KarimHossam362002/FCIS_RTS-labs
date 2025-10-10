@@ -1,17 +1,17 @@
 # 🧠 Real-Time Systems — Hands-On Labs
 
 This repository contains hands-on lab exercises for the **RTS (Real-Time Systems)** course.
-Each lab demonstrates core real-time concepts such as task scheduling, timing, and multitasking using **FreeRTOS** and **Microchip Studio**.
+Each lab demonstrates core real-time concepts such as **task scheduling**, **timing**, and **multitasking** using **FreeRTOS** and **Microchip Studio**.
 
 ---
 
-## ⚙️ Lab 1 — Two Tasks Blinking (FreeRTOS on Arduino Uno)
+## ⚙️ Labs (FreeRTOS on Arduino Uno)
 
 ### 🧩 Requirements
 
-* Proteus 7.0
-* Microchip Studio for implementation
-* Arduino Uno Envrimoent
+* **Proteus 7.0**
+* **Microchip Studio** for implementation
+* **Arduino Uno Environment**
 
 ---
 
@@ -28,23 +28,34 @@ cd RTS-Handson
 
 ### 🔹 Step 2 — Extract Proteus Files
 
-* Find the file named **“Proteus 7 Professional.zip”** in the main folder.
+* Locate the file named **`Proteus 7 Professional.zip`** in the main folder.
 * Right-click → **Extract All...**
-* After extracting, open **`BIN/ISIS.EXE`** from the extracted folder to start Proteus.
+* After extracting, open **`BIN/ISIS.EXE`** from the extracted folder to start **Proteus**.
 
 ---
 
-### 🔹 Step 3 — Open Each Lab
+### 🔹 Step 3 — Open the FreeRTOS Solution
+
+Before running any lab, open the main **Microchip Studio** solution file:
+
+```bash
+ArduinoUnoFreertos_6_1.atsln
+```
+
+This will load all FreeRTOS-related lab projects in **Microchip Studio**, allowing you to build, modify, and test them easily.
+
+---
+
+### 🔹 Step 4 — Open Each Lab
 
 Each lab folder (like `Lab1`, `Lab2`, etc.) contains:
 
 * 🖼 **A picture of the hands-on question**
 * ⚙️ **A Proteus hardware design** `.DSN` file
-* 💻 **Source code** that solves the problem
+* 💻 **Source code** that implements the solution
 
 To run a lab:
 
-1. Open **Proteus** → `File → Open` → choose the `.DNS` file inside the lab folder.
-2. Open the code files in **Microchip Studio**.
-3. Build and upload (or simulate using Proteus).
-
+1. Open **Proteus** → `File → Open` → choose the `.DSN` file inside the lab folder.
+2. Open the code files in **Microchip Studio** (or use the loaded solution).
+3. Build and upload the code to your **Arduino Uno**, or simulate the system using **Proteus**.
