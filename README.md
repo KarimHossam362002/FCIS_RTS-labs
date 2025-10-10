@@ -1,8 +1,3 @@
-Got it 👍 — here’s a **simpler, clean version** of your README.
-It keeps your original tone and structure, just adds short and clear steps for cloning, extracting, and using Proteus.
-
----
-
 # 🧠 Real-Time Systems — Hands-On Labs
 
 This repository contains hands-on lab exercises for the **RTS (Real-Time Systems)** course.
