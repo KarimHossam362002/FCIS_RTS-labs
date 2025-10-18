@@ -19,15 +19,15 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY, DEBUGGING
   7 .debug_abbrev 00001258  00000000  00000000  0000612c  2**0
                   CONTENTS, READONLY, DEBUGGING
-  8 .debug_line   00002569  00000000  00000000  00007384  2**0
+  8 .debug_line   00002682  00000000  00000000  00007384  2**0
                   CONTENTS, READONLY, DEBUGGING
-  9 .debug_frame  00000ad0  00000000  00000000  000098f0  2**2
+  9 .debug_frame  00000ad0  00000000  00000000  00009a08  2**2
                   CONTENTS, READONLY, DEBUGGING
- 10 .debug_str    00001683  00000000  00000000  0000a3c0  2**0
+ 10 .debug_str    00001712  00000000  00000000  0000a4d8  2**0
                   CONTENTS, READONLY, DEBUGGING
- 11 .debug_loc    00003f20  00000000  00000000  0000ba43  2**0
+ 11 .debug_loc    00003f20  00000000  00000000  0000bbea  2**0
                   CONTENTS, READONLY, DEBUGGING
- 12 .debug_ranges 00000370  00000000  00000000  0000f963  2**0
+ 12 .debug_ranges 00000370  00000000  00000000  0000fb0a  2**0
                   CONTENTS, READONLY, DEBUGGING
 
 Disassembly of section .text:
@@ -304,89 +304,43 @@ int main( void )
      1ac:	ff cf       	rjmp	.-2      	; 0x1ac <main+0x74>
 
 000001ae <vListInitialise>:
-/*-----------------------------------------------------------
- * PUBLIC LIST API documented in list.h
- *----------------------------------------------------------*/
-
-void vListInitialise( List_t * const pxList )
-{
      1ae:	fc 01       	movw	r30, r24
-	/* The list structure contains a list item which is used to mark the
-	end of the list.  To initialise the list the list end is inserted
-	as the only list entry. */
-	pxList->pxIndex = ( ListItem_t * ) &( pxList->xListEnd );			/*lint !e826 !e740 The mini list structure is used as the list end to save RAM.  This is checked and valid. */
      1b0:	03 96       	adiw	r24, 0x03	; 3
      1b2:	92 83       	std	Z+2, r25	; 0x02
      1b4:	81 83       	std	Z+1, r24	; 0x01
-
-	/* The list end value is the highest possible value in the list to
-	ensure it remains at the end of the list. */
-	pxList->xListEnd.xItemValue = portMAX_DELAY;
      1b6:	2f ef       	ldi	r18, 0xFF	; 255
      1b8:	3f ef       	ldi	r19, 0xFF	; 255
      1ba:	34 83       	std	Z+4, r19	; 0x04
      1bc:	23 83       	std	Z+3, r18	; 0x03
-
-	/* The list end next and previous pointers point to itself so we know
-	when the list is empty. */
-	pxList->xListEnd.pxNext = ( ListItem_t * ) &( pxList->xListEnd );	/*lint !e826 !e740 The mini list structure is used as the list end to save RAM.  This is checked and valid. */
      1be:	96 83       	std	Z+6, r25	; 0x06
      1c0:	85 83       	std	Z+5, r24	; 0x05
-	pxList->xListEnd.pxPrevious = ( ListItem_t * ) &( pxList->xListEnd );/*lint !e826 !e740 The mini list structure is used as the list end to save RAM.  This is checked and valid. */
      1c2:	90 87       	std	Z+8, r25	; 0x08
      1c4:	87 83       	std	Z+7, r24	; 0x07
-
-	pxList->uxNumberOfItems = ( UBaseType_t ) 0U;
      1c6:	10 82       	st	Z, r1
      1c8:	08 95       	ret
 
 000001ca <vListInitialiseItem>:
-/*-----------------------------------------------------------*/
-
-void vListInitialiseItem( ListItem_t * const pxItem )
-{
-	/* Make sure the list item is not recorded as being on a list. */
-	pxItem->pvContainer = NULL;
      1ca:	fc 01       	movw	r30, r24
      1cc:	11 86       	std	Z+9, r1	; 0x09
      1ce:	10 86       	std	Z+8, r1	; 0x08
      1d0:	08 95       	ret
 
 000001d2 <vListInsertEnd>:
-	listSET_SECOND_LIST_ITEM_INTEGRITY_CHECK_VALUE( pxItem );
-}
-/*-----------------------------------------------------------*/
-
-void vListInsertEnd( List_t * const pxList, ListItem_t * const pxNewListItem )
-{
      1d2:	cf 93       	push	r28
      1d4:	df 93       	push	r29
      1d6:	9c 01       	movw	r18, r24
      1d8:	fb 01       	movw	r30, r22
-ListItem_t * const pxIndex = pxList->pxIndex;
      1da:	dc 01       	movw	r26, r24
      1dc:	11 96       	adiw	r26, 0x01	; 1
      1de:	cd 91       	ld	r28, X+
      1e0:	dc 91       	ld	r29, X
      1e2:	12 97       	sbiw	r26, 0x02	; 2
-	listTEST_LIST_ITEM_INTEGRITY( pxNewListItem );
-
-	/* Insert a new list item into pxList, but rather than sort the list,
-	makes the new list item the last item to be removed by a call to
-	listGET_OWNER_OF_NEXT_ENTRY(). */
-	pxNewListItem->pxNext = pxIndex;
      1e4:	d3 83       	std	Z+3, r29	; 0x03
      1e6:	c2 83       	std	Z+2, r28	; 0x02
-	pxNewListItem->pxPrevious = pxIndex->pxPrevious;
      1e8:	8c 81       	ldd	r24, Y+4	; 0x04
      1ea:	9d 81       	ldd	r25, Y+5	; 0x05
      1ec:	95 83       	std	Z+5, r25	; 0x05
      1ee:	84 83       	std	Z+4, r24	; 0x04
-
-	/* Only used during decision coverage testing. */
-	mtCOVERAGE_TEST_DELAY();
-
-	pxIndex->pxPrevious->pxNext = pxNewListItem;
      1f0:	8c 81       	ldd	r24, Y+4	; 0x04
      1f2:	9d 81       	ldd	r25, Y+5	; 0x05
      1f4:	dc 01       	movw	r26, r24
@@ -394,59 +348,32 @@ ListItem_t * const pxIndex = pxList->pxIndex;
      1f8:	7c 93       	st	X, r23
      1fa:	6e 93       	st	-X, r22
      1fc:	12 97       	sbiw	r26, 0x02	; 2
-	pxIndex->pxPrevious = pxNewListItem;
      1fe:	7d 83       	std	Y+5, r23	; 0x05
      200:	6c 83       	std	Y+4, r22	; 0x04
-
-	/* Remember which list the item is in. */
-	pxNewListItem->pvContainer = ( void * ) pxList;
      202:	31 87       	std	Z+9, r19	; 0x09
      204:	20 87       	std	Z+8, r18	; 0x08
-
-	( pxList->uxNumberOfItems )++;
      206:	f9 01       	movw	r30, r18
      208:	80 81       	ld	r24, Z
      20a:	8f 5f       	subi	r24, 0xFF	; 255
      20c:	80 83       	st	Z, r24
-}
      20e:	df 91       	pop	r29
      210:	cf 91       	pop	r28
      212:	08 95       	ret
 
 00000214 <vListInsert>:
-/*-----------------------------------------------------------*/
-
-void vListInsert( List_t * const pxList, ListItem_t * const pxNewListItem )
-{
      214:	cf 93       	push	r28
      216:	df 93       	push	r29
      218:	eb 01       	movw	r28, r22
-ListItem_t *pxIterator;
-const TickType_t xValueOfInsertion = pxNewListItem->xItemValue;
      21a:	48 81       	ld	r20, Y
      21c:	59 81       	ldd	r21, Y+1	; 0x01
-	new list item should be placed after it.  This ensures that TCB's which are
-	stored in ready lists (all of which have the same xItemValue value) get a
-	share of the CPU.  However, if the xItemValue is the same as the back marker
-	the iteration loop below will not end.  Therefore the value is checked
-	first, and the algorithm slightly modified if necessary. */
-	if( xValueOfInsertion == portMAX_DELAY )
      21e:	4f 3f       	cpi	r20, 0xFF	; 255
      220:	2f ef       	ldi	r18, 0xFF	; 255
      222:	52 07       	cpc	r21, r18
      224:	21 f4       	brne	.+8      	; 0x22e <vListInsert+0x1a>
-	{
-		pxIterator = pxList->xListEnd.pxPrevious;
      226:	fc 01       	movw	r30, r24
      228:	a7 81       	ldd	r26, Z+7	; 0x07
      22a:	b0 85       	ldd	r27, Z+8	; 0x08
      22c:	0d c0       	rjmp	.+26     	; 0x248 <vListInsert+0x34>
-			4) Using a queue or semaphore before it has been initialised or
-			   before the scheduler has been started (are interrupts firing
-			   before vTaskStartScheduler() has been called?).
-		**********************************************************************/
-
-		for( pxIterator = ( ListItem_t * ) &( pxList->xListEnd ); pxIterator->pxNext->xItemValue <= xValueOfInsertion; pxIterator = pxIterator->pxNext ) /*lint !e826 !e740 The mini list structure is used as the list end to save RAM.  This is checked and valid. */
      22e:	dc 01       	movw	r26, r24
      230:	13 96       	adiw	r26, 0x03	; 3
      232:	01 c0       	rjmp	.+2      	; 0x236 <vListInsert+0x22>
@@ -460,80 +387,48 @@ const TickType_t xValueOfInsertion = pxNewListItem->xItemValue;
      242:	42 17       	cp	r20, r18
      244:	53 07       	cpc	r21, r19
      246:	b0 f7       	brcc	.-20     	; 0x234 <vListInsert+0x20>
-			/* There is nothing to do here, just iterating to the wanted
-			insertion position. */
-		}
-	}
-
-	pxNewListItem->pxNext = pxIterator->pxNext;
      248:	12 96       	adiw	r26, 0x02	; 2
      24a:	ed 91       	ld	r30, X+
      24c:	fc 91       	ld	r31, X
      24e:	13 97       	sbiw	r26, 0x03	; 3
      250:	fb 83       	std	Y+3, r31	; 0x03
      252:	ea 83       	std	Y+2, r30	; 0x02
-	pxNewListItem->pxNext->pxPrevious = pxNewListItem;
      254:	d5 83       	std	Z+5, r29	; 0x05
      256:	c4 83       	std	Z+4, r28	; 0x04
-	pxNewListItem->pxPrevious = pxIterator;
      258:	bd 83       	std	Y+5, r27	; 0x05
      25a:	ac 83       	std	Y+4, r26	; 0x04
-	pxIterator->pxNext = pxNewListItem;
      25c:	13 96       	adiw	r26, 0x03	; 3
      25e:	dc 93       	st	X, r29
      260:	ce 93       	st	-X, r28
      262:	12 97       	sbiw	r26, 0x02	; 2
-
-	/* Remember which list the item is in.  This allows fast removal of the
-	item later. */
-	pxNewListItem->pvContainer = ( void * ) pxList;
      264:	99 87       	std	Y+9, r25	; 0x09
      266:	88 87       	std	Y+8, r24	; 0x08
-
-	( pxList->uxNumberOfItems )++;
      268:	fc 01       	movw	r30, r24
      26a:	20 81       	ld	r18, Z
      26c:	2f 5f       	subi	r18, 0xFF	; 255
      26e:	20 83       	st	Z, r18
-}
      270:	df 91       	pop	r29
      272:	cf 91       	pop	r28
      274:	08 95       	ret
 
 00000276 <uxListRemove>:
-/*-----------------------------------------------------------*/
-
-UBaseType_t uxListRemove( ListItem_t * const pxItemToRemove )
-{
      276:	cf 93       	push	r28
      278:	df 93       	push	r29
      27a:	fc 01       	movw	r30, r24
-/* The list item knows which list it is in.  Obtain the list from the list
-item. */
-List_t * const pxList = ( List_t * ) pxItemToRemove->pvContainer;
      27c:	a0 85       	ldd	r26, Z+8	; 0x08
      27e:	b1 85       	ldd	r27, Z+9	; 0x09
-
-	pxItemToRemove->pxNext->pxPrevious = pxItemToRemove->pxPrevious;
      280:	c2 81       	ldd	r28, Z+2	; 0x02
      282:	d3 81       	ldd	r29, Z+3	; 0x03
      284:	84 81       	ldd	r24, Z+4	; 0x04
      286:	95 81       	ldd	r25, Z+5	; 0x05
      288:	9d 83       	std	Y+5, r25	; 0x05
      28a:	8c 83       	std	Y+4, r24	; 0x04
-	pxItemToRemove->pxPrevious->pxNext = pxItemToRemove->pxNext;
      28c:	c4 81       	ldd	r28, Z+4	; 0x04
      28e:	d5 81       	ldd	r29, Z+5	; 0x05
      290:	82 81       	ldd	r24, Z+2	; 0x02
      292:	93 81       	ldd	r25, Z+3	; 0x03
      294:	9b 83       	std	Y+3, r25	; 0x03
      296:	8a 83       	std	Y+2, r24	; 0x02
-
-	/* Only used during decision coverage testing. */
-	mtCOVERAGE_TEST_DELAY();
-
-	/* Make sure the index is left pointing to a valid item. */
-	if( pxList->pxIndex == pxItemToRemove )
      298:	11 96       	adiw	r26, 0x01	; 1
      29a:	8d 91       	ld	r24, X+
      29c:	9c 91       	ld	r25, X
@@ -541,40 +436,22 @@ List_t * const pxList = ( List_t * ) pxItemToRemove->pvContainer;
      2a0:	e8 17       	cp	r30, r24
      2a2:	f9 07       	cpc	r31, r25
      2a4:	31 f4       	brne	.+12     	; 0x2b2 <uxListRemove+0x3c>
-	{
-		pxList->pxIndex = pxItemToRemove->pxPrevious;
      2a6:	84 81       	ldd	r24, Z+4	; 0x04
      2a8:	95 81       	ldd	r25, Z+5	; 0x05
      2aa:	12 96       	adiw	r26, 0x02	; 2
      2ac:	9c 93       	st	X, r25
      2ae:	8e 93       	st	-X, r24
      2b0:	11 97       	sbiw	r26, 0x01	; 1
-	else
-	{
-		mtCOVERAGE_TEST_MARKER();
-	}
-
-	pxItemToRemove->pvContainer = NULL;
      2b2:	11 86       	std	Z+9, r1	; 0x09
      2b4:	10 86       	std	Z+8, r1	; 0x08
-	( pxList->uxNumberOfItems )--;
      2b6:	8c 91       	ld	r24, X
      2b8:	81 50       	subi	r24, 0x01	; 1
      2ba:	8c 93       	st	X, r24
-
-	return pxList->uxNumberOfItems;
-}
      2bc:	df 91       	pop	r29
      2be:	cf 91       	pop	r28
      2c0:	08 95       	ret
 
 000002c2 <pxPortInitialiseStack>:
-	return pdTRUE;
-}
-/*-----------------------------------------------------------*/
-
-void vPortEndScheduler( void )
-{
      2c2:	31 e1       	ldi	r19, 0x11	; 17
      2c4:	fc 01       	movw	r30, r24
      2c6:	30 83       	st	Z, r19
@@ -685,11 +562,11 @@ void vPortEndScheduler( void )
      398:	08 95       	ret
 
 0000039a <xPortStartScheduler>:
-     39a:	10 92 89 00 	sts	0x0089, r1	; 0x800089 <__TEXT_REGION_LENGTH__+0x7f8089>
+     39a:	10 92 89 00 	sts	0x0089, r1	; 0x800089 <__DATA_REGION_ORIGIN__+0x29>
      39e:	8c e7       	ldi	r24, 0x7C	; 124
-     3a0:	80 93 88 00 	sts	0x0088, r24	; 0x800088 <__TEXT_REGION_LENGTH__+0x7f8088>
+     3a0:	80 93 88 00 	sts	0x0088, r24	; 0x800088 <__DATA_REGION_ORIGIN__+0x28>
      3a4:	8b e0       	ldi	r24, 0x0B	; 11
-     3a6:	80 93 81 00 	sts	0x0081, r24	; 0x800081 <__TEXT_REGION_LENGTH__+0x7f8081>
+     3a6:	80 93 81 00 	sts	0x0081, r24	; 0x800081 <__DATA_REGION_ORIGIN__+0x21>
      3aa:	ef e6       	ldi	r30, 0x6F	; 111
      3ac:	f0 e0       	ldi	r31, 0x00	; 0
      3ae:	80 81       	ld	r24, Z
@@ -740,12 +617,6 @@ void vPortEndScheduler( void )
      40c:	08 95       	ret
 
 0000040e <vPortYield>:
- * can use a naked attribute.
- */
-void vPortYield( void ) __attribute__ ( ( naked ) );
-void vPortYield( void )
-{
-	portSAVE_CONTEXT();
      40e:	0f 92       	push	r0
      410:	0f b6       	in	r0, 0x3f	; 63
      412:	f8 94       	cli
@@ -788,9 +659,7 @@ void vPortYield( void )
      460:	0d 92       	st	X+, r0
      462:	0e b6       	in	r0, 0x3e	; 62
      464:	0d 92       	st	X+, r0
-	vTaskSwitchContext();
      466:	0e 94 b6 09 	call	0x136c	; 0x136c <vTaskSwitchContext>
-	portRESTORE_CONTEXT();
      46a:	a0 91 fd 07 	lds	r26, 0x07FD	; 0x8007fd <pxCurrentTCB>
      46e:	b0 91 fe 07 	lds	r27, 0x07FE	; 0x8007fe <pxCurrentTCB+0x1>
      472:	cd 91       	ld	r28, X+
@@ -831,23 +700,14 @@ void vPortYield( void )
      4b8:	0f 90       	pop	r0
      4ba:	0f be       	out	0x3f, r0	; 63
      4bc:	0f 90       	pop	r0
-
-	asm volatile ( "ret" );
      4be:	08 95       	ret
 
 000004c0 <__vector_16>:
-}
-
-
-ISR(TIMER0_OVF_vect)				//ISR for timer0 overflow
-{
      4c0:	1f 92       	push	r1
      4c2:	0f 92       	push	r0
      4c4:	0f b6       	in	r0, 0x3f	; 63
      4c6:	0f 92       	push	r0
      4c8:	11 24       	eor	r1, r1
-  ulIsrHandler[0];	
-}
      4ca:	0f 90       	pop	r0
      4cc:	0f be       	out	0x3f, r0	; 63
      4ce:	0f 90       	pop	r0
@@ -855,12 +715,6 @@ ISR(TIMER0_OVF_vect)				//ISR for timer0 overflow
      4d2:	18 95       	reti
 
 000004d4 <vPortYieldFromTick>:
- * call comes from the tick ISR.
- */
-void vPortYieldFromTick( void ) __attribute__ ( ( naked ) );
-void vPortYieldFromTick( void )
-{
-	portSAVE_CONTEXT();
      4d4:	0f 92       	push	r0
      4d6:	0f b6       	in	r0, 0x3f	; 63
      4d8:	f8 94       	cli
@@ -903,14 +757,9 @@ void vPortYieldFromTick( void )
      526:	0d 92       	st	X+, r0
      528:	0e b6       	in	r0, 0x3e	; 62
      52a:	0d 92       	st	X+, r0
-	if( xTaskIncrementTick() != pdFALSE )
      52c:	0e 94 f8 07 	call	0xff0	; 0xff0 <xTaskIncrementTick>
      530:	81 11       	cpse	r24, r1
-	{
-		vTaskSwitchContext();
      532:	0e 94 b6 09 	call	0x136c	; 0x136c <vTaskSwitchContext>
-	}
-	portRESTORE_CONTEXT();
      536:	a0 91 fd 07 	lds	r26, 0x07FD	; 0x8007fd <pxCurrentTCB>
      53a:	b0 91 fe 07 	lds	r27, 0x07FE	; 0x8007fe <pxCurrentTCB+0x1>
      53e:	cd 91       	ld	r28, X+
@@ -951,150 +800,68 @@ void vPortYieldFromTick( void )
      584:	0f 90       	pop	r0
      586:	0f be       	out	0x3f, r0	; 63
      588:	0f 90       	pop	r0
-
-	asm volatile ( "ret" );
      58a:	08 95       	ret
 
 0000058c <__vector_11>:
-	 * count is incremented after the context is saved.
-	 */
-	void TIMER1_COMPA_vect(void) __attribute__ ((signal, naked));
-	void TIMER1_COMPA_vect(void)
-	{
-		vPortYieldFromTick();
      58c:	0e 94 6a 02 	call	0x4d4	; 0x4d4 <vPortYieldFromTick>
-		asm volatile ( "reti" );
      590:	18 95       	reti
 
 00000592 <pvPortMalloc>:
-	pxIterator->pxNextFreeBlock = pxBlockToInsert;									\
-}
-/*-----------------------------------------------------------*/
-
-void *pvPortMalloc( size_t xWantedSize )
-{
      592:	0f 93       	push	r16
      594:	1f 93       	push	r17
      596:	cf 93       	push	r28
      598:	df 93       	push	r29
      59a:	ec 01       	movw	r28, r24
-BlockLink_t *pxBlock, *pxPreviousBlock, *pxNewBlockLink;
-static BaseType_t xHeapHasBeenInitialised = pdFALSE;
-void *pvReturn = NULL;
-
-	vTaskSuspendAll();
      59c:	0e 94 e8 07 	call	0xfd0	; 0xfd0 <vTaskSuspendAll>
-	{
-		/* If this is the first call to malloc then the heap will require
-		initialisation to setup the list of free blocks. */
-		if( xHeapHasBeenInitialised == pdFALSE )
      5a0:	80 91 b8 01 	lds	r24, 0x01B8	; 0x8001b8 <__data_end>
      5a4:	81 11       	cpse	r24, r1
      5a6:	1d c0       	rjmp	.+58     	; 0x5e2 <pvPortMalloc+0x50>
-	/* Ensure the heap starts on a correctly aligned boundary. */
-	pucAlignedHeap = ( uint8_t * ) ( ( ( portPOINTER_SIZE_TYPE ) &ucHeap[ portBYTE_ALIGNMENT ] ) & ( ~( ( portPOINTER_SIZE_TYPE ) portBYTE_ALIGNMENT_MASK ) ) );
-
-	/* xStart is used to hold a pointer to the first item in the list of free
-	blocks.  The void cast is used to prevent compiler warnings. */
-	xStart.pxNextFreeBlock = ( void * ) pucAlignedHeap;
      5a8:	ed eb       	ldi	r30, 0xBD	; 189
      5aa:	f1 e0       	ldi	r31, 0x01	; 1
      5ac:	82 ec       	ldi	r24, 0xC2	; 194
      5ae:	91 e0       	ldi	r25, 0x01	; 1
      5b0:	91 83       	std	Z+1, r25	; 0x01
      5b2:	80 83       	st	Z, r24
-	xStart.xBlockSize = ( size_t ) 0;
      5b4:	13 82       	std	Z+3, r1	; 0x03
      5b6:	12 82       	std	Z+2, r1	; 0x02
-
-	/* xEnd is used to mark the end of the list of free blocks. */
-	xEnd.xBlockSize = configADJUSTED_HEAP_SIZE;
      5b8:	e9 eb       	ldi	r30, 0xB9	; 185
      5ba:	f1 e0       	ldi	r31, 0x01	; 1
      5bc:	8b ed       	ldi	r24, 0xDB	; 219
      5be:	95 e0       	ldi	r25, 0x05	; 5
      5c0:	93 83       	std	Z+3, r25	; 0x03
      5c2:	82 83       	std	Z+2, r24	; 0x02
-	xEnd.pxNextFreeBlock = NULL;
      5c4:	11 82       	std	Z+1, r1	; 0x01
      5c6:	10 82       	st	Z, r1
-
-	/* To start with there is a single free block that is sized to take up the
-	entire heap space. */
-	pxFirstFreeBlock = ( void * ) pucAlignedHeap;
-	pxFirstFreeBlock->xBlockSize = configADJUSTED_HEAP_SIZE;
      5c8:	a1 ec       	ldi	r26, 0xC1	; 193
      5ca:	b1 e0       	ldi	r27, 0x01	; 1
      5cc:	14 96       	adiw	r26, 0x04	; 4
      5ce:	9c 93       	st	X, r25
      5d0:	8e 93       	st	-X, r24
      5d2:	13 97       	sbiw	r26, 0x03	; 3
-	pxFirstFreeBlock->pxNextFreeBlock = &xEnd;
      5d4:	12 96       	adiw	r26, 0x02	; 2
      5d6:	fc 93       	st	X, r31
      5d8:	ee 93       	st	-X, r30
      5da:	11 97       	sbiw	r26, 0x01	; 1
-		/* If this is the first call to malloc then the heap will require
-		initialisation to setup the list of free blocks. */
-		if( xHeapHasBeenInitialised == pdFALSE )
-		{
-			prvHeapInit();
-			xHeapHasBeenInitialised = pdTRUE;
      5dc:	81 e0       	ldi	r24, 0x01	; 1
      5de:	80 93 b8 01 	sts	0x01B8, r24	; 0x8001b8 <__data_end>
-		}
-
-		/* The wanted size is increased so it can contain a BlockLink_t
-		structure in addition to the requested amount of bytes. */
-		if( xWantedSize > 0 )
      5e2:	20 97       	sbiw	r28, 0x00	; 0
      5e4:	09 f4       	brne	.+2      	; 0x5e8 <pvPortMalloc+0x56>
      5e6:	5f c0       	rjmp	.+190    	; 0x6a6 <pvPortMalloc+0x114>
-		{
-			xWantedSize += heapSTRUCT_SIZE;
      5e8:	9e 01       	movw	r18, r28
      5ea:	2c 5f       	subi	r18, 0xFC	; 252
      5ec:	3f 4f       	sbci	r19, 0xFF	; 255
-				/* Byte alignment required. */
-				xWantedSize += ( portBYTE_ALIGNMENT - ( xWantedSize & portBYTE_ALIGNMENT_MASK ) );
-			}
-		}
-
-		if( ( xWantedSize > 0 ) && ( xWantedSize < configADJUSTED_HEAP_SIZE ) )
      5ee:	23 96       	adiw	r28, 0x03	; 3
      5f0:	ca 3d       	cpi	r28, 0xDA	; 218
      5f2:	d5 40       	sbci	r29, 0x05	; 5
      5f4:	08 f0       	brcs	.+2      	; 0x5f8 <pvPortMalloc+0x66>
      5f6:	5a c0       	rjmp	.+180    	; 0x6ac <pvPortMalloc+0x11a>
-		{
-			/* Blocks are stored in byte order - traverse the list from the start
-			(smallest) block until one of adequate size is found. */
-			pxPreviousBlock = &xStart;
-			pxBlock = xStart.pxNextFreeBlock;
      5f8:	e0 91 bd 01 	lds	r30, 0x01BD	; 0x8001bd <xStart>
      5fc:	f0 91 be 01 	lds	r31, 0x01BE	; 0x8001be <xStart+0x1>
-
-		if( ( xWantedSize > 0 ) && ( xWantedSize < configADJUSTED_HEAP_SIZE ) )
-		{
-			/* Blocks are stored in byte order - traverse the list from the start
-			(smallest) block until one of adequate size is found. */
-			pxPreviousBlock = &xStart;
      600:	ad eb       	ldi	r26, 0xBD	; 189
      602:	b1 e0       	ldi	r27, 0x01	; 1
-			pxBlock = xStart.pxNextFreeBlock;
-			while( ( pxBlock->xBlockSize < xWantedSize ) && ( pxBlock->pxNextFreeBlock != NULL ) )
      604:	02 c0       	rjmp	.+4      	; 0x60a <pvPortMalloc+0x78>
      606:	df 01       	movw	r26, r30
-			{
-				pxPreviousBlock = pxBlock;
-				pxBlock = pxBlock->pxNextFreeBlock;
      608:	fc 01       	movw	r30, r24
-		{
-			/* Blocks are stored in byte order - traverse the list from the start
-			(smallest) block until one of adequate size is found. */
-			pxPreviousBlock = &xStart;
-			pxBlock = xStart.pxNextFreeBlock;
-			while( ( pxBlock->xBlockSize < xWantedSize ) && ( pxBlock->pxNextFreeBlock != NULL ) )
      60a:	82 81       	ldd	r24, Z+2	; 0x02
      60c:	93 81       	ldd	r25, Z+3	; 0x03
      60e:	82 17       	cp	r24, r18
@@ -1104,38 +871,21 @@ void *pvReturn = NULL;
      616:	91 81       	ldd	r25, Z+1	; 0x01
      618:	00 97       	sbiw	r24, 0x00	; 0
      61a:	a9 f7       	brne	.-22     	; 0x606 <pvPortMalloc+0x74>
-				pxPreviousBlock = pxBlock;
-				pxBlock = pxBlock->pxNextFreeBlock;
-			}
-
-			/* If we found the end marker then a block of adequate size was not found. */
-			if( pxBlock != &xEnd )
      61c:	c1 e0       	ldi	r28, 0x01	; 1
      61e:	e9 3b       	cpi	r30, 0xB9	; 185
      620:	fc 07       	cpc	r31, r28
      622:	09 f4       	brne	.+2      	; 0x626 <pvPortMalloc+0x94>
      624:	46 c0       	rjmp	.+140    	; 0x6b2 <pvPortMalloc+0x120>
-			{
-				/* Return the memory space - jumping over the BlockLink_t structure
-				at its start. */
-				pvReturn = ( void * ) ( ( ( uint8_t * ) pxPreviousBlock->pxNextFreeBlock ) + heapSTRUCT_SIZE );
      626:	cd 91       	ld	r28, X+
      628:	dc 91       	ld	r29, X
      62a:	11 97       	sbiw	r26, 0x01	; 1
      62c:	8e 01       	movw	r16, r28
      62e:	0c 5f       	subi	r16, 0xFC	; 252
      630:	1f 4f       	sbci	r17, 0xFF	; 255
-
-				/* This block is being returned for use so must be taken out of the
-				list of free blocks. */
-				pxPreviousBlock->pxNextFreeBlock = pxBlock->pxNextFreeBlock;
      632:	80 81       	ld	r24, Z
      634:	91 81       	ldd	r25, Z+1	; 0x01
      636:	8d 93       	st	X+, r24
      638:	9c 93       	st	X, r25
-
-				/* If the block is larger than required it can be split into two. */
-				if( ( pxBlock->xBlockSize - xWantedSize ) > heapMINIMUM_BLOCK_SIZE )
      63a:	82 81       	ldd	r24, Z+2	; 0x02
      63c:	93 81       	ldd	r25, Z+3	; 0x03
      63e:	82 1b       	sub	r24, r18
@@ -1143,29 +893,16 @@ void *pvReturn = NULL;
      642:	89 30       	cpi	r24, 0x09	; 9
      644:	91 05       	cpc	r25, r1
      646:	10 f1       	brcs	.+68     	; 0x68c <pvPortMalloc+0xfa>
-				{
-					/* This block is to be split into two.  Create a new block
-					following the number of bytes requested. The void cast is
-					used to prevent byte alignment warnings from the compiler. */
-					pxNewBlockLink = ( void * ) ( ( ( uint8_t * ) pxBlock ) + xWantedSize );
      648:	bf 01       	movw	r22, r30
      64a:	62 0f       	add	r22, r18
      64c:	73 1f       	adc	r23, r19
-
-					/* Calculate the sizes of two blocks split from the single
-					block. */
-					pxNewBlockLink->xBlockSize = pxBlock->xBlockSize - xWantedSize;
      64e:	db 01       	movw	r26, r22
      650:	13 96       	adiw	r26, 0x03	; 3
      652:	9c 93       	st	X, r25
      654:	8e 93       	st	-X, r24
      656:	12 97       	sbiw	r26, 0x02	; 2
-					pxBlock->xBlockSize = xWantedSize;
      658:	33 83       	std	Z+3, r19	; 0x03
      65a:	22 83       	std	Z+2, r18	; 0x02
-
-					/* Insert the new block into the list of free blocks. */
-					prvInsertBlockIntoFreeList( ( pxNewBlockLink ) );
      65c:	12 96       	adiw	r26, 0x02	; 2
      65e:	4d 91       	ld	r20, X+
      660:	5c 91       	ld	r21, X
@@ -1190,24 +927,15 @@ void *pvReturn = NULL;
      686:	dc 01       	movw	r26, r24
      688:	6d 93       	st	X+, r22
      68a:	7c 93       	st	X, r23
-				}
-
-				xFreeBytesRemaining -= pxBlock->xBlockSize;
-     68c:	80 91 00 01 	lds	r24, 0x0100	; 0x800100 <__DATA_REGION_ORIGIN__>
-     690:	90 91 01 01 	lds	r25, 0x0101	; 0x800101 <__DATA_REGION_ORIGIN__+0x1>
+     68c:	80 91 00 01 	lds	r24, 0x0100	; 0x800100 <__data_start>
+     690:	90 91 01 01 	lds	r25, 0x0101	; 0x800101 <__data_start+0x1>
      694:	22 81       	ldd	r18, Z+2	; 0x02
      696:	33 81       	ldd	r19, Z+3	; 0x03
      698:	82 1b       	sub	r24, r18
      69a:	93 0b       	sbc	r25, r19
-     69c:	90 93 01 01 	sts	0x0101, r25	; 0x800101 <__DATA_REGION_ORIGIN__+0x1>
-     6a0:	80 93 00 01 	sts	0x0100, r24	; 0x800100 <__DATA_REGION_ORIGIN__>
+     69c:	90 93 01 01 	sts	0x0101, r25	; 0x800101 <__data_start+0x1>
+     6a0:	80 93 00 01 	sts	0x0100, r24	; 0x800100 <__data_start>
      6a4:	08 c0       	rjmp	.+16     	; 0x6b6 <pvPortMalloc+0x124>
-
-void *pvPortMalloc( size_t xWantedSize )
-{
-BlockLink_t *pxBlock, *pxPreviousBlock, *pxNewBlockLink;
-static BaseType_t xHeapHasBeenInitialised = pdFALSE;
-void *pvReturn = NULL;
      6a6:	00 e0       	ldi	r16, 0x00	; 0
      6a8:	10 e0       	ldi	r17, 0x00	; 0
      6aa:	05 c0       	rjmp	.+10     	; 0x6b6 <pvPortMalloc+0x124>
@@ -1216,19 +944,7 @@ void *pvReturn = NULL;
      6b0:	02 c0       	rjmp	.+4      	; 0x6b6 <pvPortMalloc+0x124>
      6b2:	00 e0       	ldi	r16, 0x00	; 0
      6b4:	10 e0       	ldi	r17, 0x00	; 0
-			}
-		}
-
-		traceMALLOC( pvReturn, xWantedSize );
-	}
-	( void ) xTaskResumeAll();
      6b6:	0e 94 b5 08 	call	0x116a	; 0x116a <xTaskResumeAll>
-		}
-	}
-	#endif
-
-	return pvReturn;
-}
      6ba:	c8 01       	movw	r24, r16
      6bc:	df 91       	pop	r29
      6be:	cf 91       	pop	r28
@@ -1237,38 +953,17 @@ void *pvReturn = NULL;
      6c4:	08 95       	ret
 
 000006c6 <vPortFree>:
-/*-----------------------------------------------------------*/
-
-void vPortFree( void *pv )
-{
      6c6:	0f 93       	push	r16
      6c8:	1f 93       	push	r17
      6ca:	cf 93       	push	r28
      6cc:	df 93       	push	r29
-uint8_t *puc = ( uint8_t * ) pv;
-BlockLink_t *pxLink;
-
-	if( pv != NULL )
      6ce:	00 97       	sbiw	r24, 0x00	; 0
      6d0:	41 f1       	breq	.+80     	; 0x722 <vPortFree+0x5c>
      6d2:	ec 01       	movw	r28, r24
-	{
-		/* The memory being freed will have an BlockLink_t structure immediately
-		before it. */
-		puc -= heapSTRUCT_SIZE;
      6d4:	8c 01       	movw	r16, r24
      6d6:	04 50       	subi	r16, 0x04	; 4
      6d8:	11 09       	sbc	r17, r1
-
-		/* This unexpected casting is to keep some compilers from issuing
-		byte alignment warnings. */
-		pxLink = ( void * ) puc;
-
-		vTaskSuspendAll();
      6da:	0e 94 e8 07 	call	0xfd0	; 0xfd0 <vTaskSuspendAll>
-		{
-			/* Add this block to the list of free blocks. */
-			prvInsertBlockIntoFreeList( ( ( BlockLink_t * ) pxLink ) );
      6de:	f8 01       	movw	r30, r16
      6e0:	42 81       	ldd	r20, Z+2	; 0x02
      6e2:	53 81       	ldd	r21, Z+3	; 0x03
@@ -1289,21 +984,15 @@ BlockLink_t *pxLink;
      700:	e8 83       	st	Y, r30
      702:	0d 93       	st	X+, r16
      704:	1c 93       	st	X, r17
-			xFreeBytesRemaining += pxLink->xBlockSize;
-     706:	20 91 00 01 	lds	r18, 0x0100	; 0x800100 <__DATA_REGION_ORIGIN__>
-     70a:	30 91 01 01 	lds	r19, 0x0101	; 0x800101 <__DATA_REGION_ORIGIN__+0x1>
+     706:	20 91 00 01 	lds	r18, 0x0100	; 0x800100 <__data_start>
+     70a:	30 91 01 01 	lds	r19, 0x0101	; 0x800101 <__data_start+0x1>
      70e:	8a 81       	ldd	r24, Y+2	; 0x02
      710:	9b 81       	ldd	r25, Y+3	; 0x03
      712:	82 0f       	add	r24, r18
      714:	93 1f       	adc	r25, r19
-     716:	90 93 01 01 	sts	0x0101, r25	; 0x800101 <__DATA_REGION_ORIGIN__+0x1>
-     71a:	80 93 00 01 	sts	0x0100, r24	; 0x800100 <__DATA_REGION_ORIGIN__>
-			traceFREE( pv, pxLink->xBlockSize );
-		}
-		( void ) xTaskResumeAll();
+     716:	90 93 01 01 	sts	0x0101, r25	; 0x800101 <__data_start+0x1>
+     71a:	80 93 00 01 	sts	0x0100, r24	; 0x800100 <__data_start>
      71e:	0e 94 b5 08 	call	0x116a	; 0x116a <xTaskResumeAll>
-	}
-}
      722:	df 91       	pop	r29
      724:	cf 91       	pop	r28
      726:	1f 91       	pop	r17
@@ -1311,12 +1000,6 @@ BlockLink_t *pxLink;
      72a:	08 95       	ret
 
 0000072c <prvCopyDataToQueue>:
-		}
-	}
-	portCLEAR_INTERRUPT_MASK_FROM_ISR( uxSavedInterruptStatus );
-
-	return xReturn;
-}
      72c:	1f 93       	push	r17
      72e:	cf 93       	push	r28
      730:	df 93       	push	r29
@@ -1409,7 +1092,7 @@ BlockLink_t *pxLink;
      7de:	92 8d       	ldd	r25, Z+26	; 0x1a
      7e0:	83 8d       	ldd	r24, Z+27	; 0x1b
      7e2:	98 17       	cp	r25, r24
-     7e4:	e8 f4       	brcc	.+58     	; 0x820 <__DATA_REGION_LENGTH__+0x20>
+     7e4:	e8 f4       	brcc	.+58     	; 0x820 <prvNotifyQueueSetContainer+0x5e>
      7e6:	46 2f       	mov	r20, r22
      7e8:	be 01       	movw	r22, r28
      7ea:	6f 5f       	subi	r22, 0xFF	; 255
@@ -1420,23 +1103,23 @@ BlockLink_t *pxLink;
      7f6:	f8 01       	movw	r30, r16
      7f8:	86 8d       	ldd	r24, Z+30	; 0x1e
      7fa:	8f 3f       	cpi	r24, 0xFF	; 255
-     7fc:	61 f4       	brne	.+24     	; 0x816 <__DATA_REGION_LENGTH__+0x16>
+     7fc:	61 f4       	brne	.+24     	; 0x816 <prvNotifyQueueSetContainer+0x54>
      7fe:	81 89       	ldd	r24, Z+17	; 0x11
      800:	88 23       	and	r24, r24
-     802:	79 f0       	breq	.+30     	; 0x822 <__DATA_REGION_LENGTH__+0x22>
+     802:	79 f0       	breq	.+30     	; 0x822 <prvNotifyQueueSetContainer+0x60>
      804:	c8 01       	movw	r24, r16
      806:	41 96       	adiw	r24, 0x11	; 17
      808:	0e 94 4f 0a 	call	0x149e	; 0x149e <xTaskRemoveFromEventList>
      80c:	88 23       	and	r24, r24
-     80e:	49 f0       	breq	.+18     	; 0x822 <__DATA_REGION_LENGTH__+0x22>
+     80e:	49 f0       	breq	.+18     	; 0x822 <prvNotifyQueueSetContainer+0x60>
      810:	ff 24       	eor	r15, r15
      812:	f3 94       	inc	r15
-     814:	06 c0       	rjmp	.+12     	; 0x822 <__DATA_REGION_LENGTH__+0x22>
+     814:	06 c0       	rjmp	.+12     	; 0x822 <prvNotifyQueueSetContainer+0x60>
      816:	f8 01       	movw	r30, r16
      818:	86 8d       	ldd	r24, Z+30	; 0x1e
      81a:	8f 5f       	subi	r24, 0xFF	; 255
      81c:	86 8f       	std	Z+30, r24	; 0x1e
-     81e:	01 c0       	rjmp	.+2      	; 0x822 <__DATA_REGION_LENGTH__+0x22>
+     81e:	01 c0       	rjmp	.+2      	; 0x822 <prvNotifyQueueSetContainer+0x60>
      820:	f1 2c       	mov	r15, r1
      822:	8f 2d       	mov	r24, r15
      824:	0f 90       	pop	r0
@@ -1978,35 +1661,16 @@ BlockLink_t *pxLink;
      c9a:	08 95       	ret
 
 00000c9c <uxQueueMessagesWaiting>:
-{
-UBaseType_t uxReturn;
-
-	configASSERT( xQueue );
-
-	taskENTER_CRITICAL();
      c9c:	0f b6       	in	r0, 0x3f	; 63
      c9e:	f8 94       	cli
      ca0:	0f 92       	push	r0
-	{
-		uxReturn = ( ( Queue_t * ) xQueue )->uxMessagesWaiting;
      ca2:	fc 01       	movw	r30, r24
      ca4:	82 8d       	ldd	r24, Z+26	; 0x1a
-	}
-	taskEXIT_CRITICAL();
      ca6:	0f 90       	pop	r0
      ca8:	0f be       	out	0x3f, r0	; 63
-
-	return uxReturn;
-} /*lint !e818 Pointer cannot be declared const as xQueue is a typedef not pointer. */
      caa:	08 95       	ret
 
 00000cac <prvResetNextTaskUnblockTime>:
-	{
-		xReturn = pdFALSE;
-	}
-
-	return xReturn;
-}
      cac:	e0 91 c5 07 	lds	r30, 0x07C5	; 0x8007c5 <pxDelayedTaskList>
      cb0:	f0 91 c6 07 	lds	r31, 0x07C6	; 0x8007c6 <pxDelayedTaskList+0x1>
      cb4:	80 81       	ld	r24, Z
@@ -2934,16 +2598,9 @@ UBaseType_t uxReturn;
     152c:	08 95       	ret
 
 0000152e <vTaskSetTimeOutState>:
-/*-----------------------------------------------------------*/
-
-void vTaskSetTimeOutState( TimeOut_t * const pxTimeOut )
-{
-	configASSERT( pxTimeOut );
-	pxTimeOut->xOverflowCount = xNumOfOverflows;
     152e:	20 91 9f 07 	lds	r18, 0x079F	; 0x80079f <xNumOfOverflows>
     1532:	fc 01       	movw	r30, r24
     1534:	20 83       	st	Z, r18
-	pxTimeOut->xTimeOnEntering = xTickCount;
     1536:	20 91 a4 07 	lds	r18, 0x07A4	; 0x8007a4 <xTickCount>
     153a:	30 91 a5 07 	lds	r19, 0x07A5	; 0x8007a5 <xTickCount+0x1>
     153e:	32 83       	std	Z+2, r19	; 0x02
@@ -2951,26 +2608,11 @@ void vTaskSetTimeOutState( TimeOut_t * const pxTimeOut )
     1542:	08 95       	ret
 
 00001544 <xTaskCheckForTimeOut>:
-BaseType_t xReturn;
-
-	configASSERT( pxTimeOut );
-	configASSERT( pxTicksToWait );
-
-	taskENTER_CRITICAL();
     1544:	0f b6       	in	r0, 0x3f	; 63
     1546:	f8 94       	cli
     1548:	0f 92       	push	r0
-	{
-		/* Minor optimisation.  The tick count cannot change in this block. */
-		const TickType_t xConstTickCount = xTickCount;
     154a:	40 91 a4 07 	lds	r20, 0x07A4	; 0x8007a4 <xTickCount>
     154e:	50 91 a5 07 	lds	r21, 0x07A5	; 0x8007a5 <xTickCount+0x1>
-
-		#if ( INCLUDE_vTaskSuspend == 1 )
-			/* If INCLUDE_vTaskSuspend is set to 1 and the block time specified is
-			the maximum block time then the task should block indefinitely, and
-			therefore never time out. */
-			if( *pxTicksToWait == portMAX_DELAY )
     1552:	db 01       	movw	r26, r22
     1554:	2d 91       	ld	r18, X+
     1556:	3c 91       	ld	r19, X
@@ -2978,12 +2620,6 @@ BaseType_t xReturn;
     155a:	bf ef       	ldi	r27, 0xFF	; 255
     155c:	3b 07       	cpc	r19, r27
     155e:	19 f1       	breq	.+70     	; 0x15a6 <xTaskCheckForTimeOut+0x62>
-				xReturn = pdFALSE;
-			}
-			else /* We are not blocking indefinitely, perform the checks below. */
-		#endif
-
-		if( ( xNumOfOverflows != pxTimeOut->xOverflowCount ) && ( xConstTickCount >= pxTimeOut->xTimeOnEntering ) ) /*lint !e525 Indentation preferred as is to make code within pre-processor directives clearer. */
     1560:	e0 91 9f 07 	lds	r30, 0x079F	; 0x80079f <xNumOfOverflows>
     1564:	dc 01       	movw	r26, r24
     1566:	fc 91       	ld	r31, X
@@ -2996,12 +2632,6 @@ BaseType_t xReturn;
     1574:	4e 17       	cp	r20, r30
     1576:	5f 07       	cpc	r21, r31
     1578:	c0 f4       	brcc	.+48     	; 0x15aa <xTaskCheckForTimeOut+0x66>
-			was called, but has also overflowed since vTaskSetTimeOut() was called.
-			It must have wrapped all the way around and gone past us again. This
-			passed since vTaskSetTimeout() was called. */
-			xReturn = pdTRUE;
-		}
-		else if( ( xConstTickCount - pxTimeOut->xTimeOnEntering ) < *pxTicksToWait )
     157a:	dc 01       	movw	r26, r24
     157c:	11 96       	adiw	r26, 0x01	; 1
     157e:	ed 91       	ld	r30, X+
@@ -3014,70 +2644,30 @@ BaseType_t xReturn;
     158c:	b3 07       	cpc	r27, r19
     158e:	78 f4       	brcc	.+30     	; 0x15ae <xTaskCheckForTimeOut+0x6a>
     1590:	db 01       	movw	r26, r22
-		{
-			/* Not a genuine timeout. Adjust parameters for time remaining. */
-			*pxTicksToWait -= ( xConstTickCount -  pxTimeOut->xTimeOnEntering );
     1592:	e4 1b       	sub	r30, r20
     1594:	f5 0b       	sbc	r31, r21
     1596:	2e 0f       	add	r18, r30
     1598:	3f 1f       	adc	r19, r31
     159a:	2d 93       	st	X+, r18
     159c:	3c 93       	st	X, r19
-			vTaskSetTimeOutState( pxTimeOut );
     159e:	0e 94 97 0a 	call	0x152e	; 0x152e <vTaskSetTimeOutState>
-			xReturn = pdFALSE;
     15a2:	80 e0       	ldi	r24, 0x00	; 0
     15a4:	05 c0       	rjmp	.+10     	; 0x15b0 <xTaskCheckForTimeOut+0x6c>
-			/* If INCLUDE_vTaskSuspend is set to 1 and the block time specified is
-			the maximum block time then the task should block indefinitely, and
-			therefore never time out. */
-			if( *pxTicksToWait == portMAX_DELAY )
-			{
-				xReturn = pdFALSE;
     15a6:	80 e0       	ldi	r24, 0x00	; 0
     15a8:	03 c0       	rjmp	.+6      	; 0x15b0 <xTaskCheckForTimeOut+0x6c>
-		{
-			/* The tick count is greater than the time at which vTaskSetTimeout()
-			was called, but has also overflowed since vTaskSetTimeOut() was called.
-			It must have wrapped all the way around and gone past us again. This
-			passed since vTaskSetTimeout() was called. */
-			xReturn = pdTRUE;
     15aa:	81 e0       	ldi	r24, 0x01	; 1
     15ac:	01 c0       	rjmp	.+2      	; 0x15b0 <xTaskCheckForTimeOut+0x6c>
-			vTaskSetTimeOutState( pxTimeOut );
-			xReturn = pdFALSE;
-		}
-		else
-		{
-			xReturn = pdTRUE;
     15ae:	81 e0       	ldi	r24, 0x01	; 1
-		}
-	}
-	taskEXIT_CRITICAL();
     15b0:	0f 90       	pop	r0
     15b2:	0f be       	out	0x3f, r0	; 63
-
-	return xReturn;
-}
     15b4:	08 95       	ret
 
 000015b6 <vTaskMissedYield>:
-/*-----------------------------------------------------------*/
-
-void vTaskMissedYield( void )
-{
-	xYieldPending = pdTRUE;
     15b6:	81 e0       	ldi	r24, 0x01	; 1
     15b8:	80 93 a0 07 	sts	0x07A0, r24	; 0x8007a0 <xYieldPending>
     15bc:	08 95       	ret
 
 000015be <__vector_1>:
-    intFunc[EXTERNAL_INT_7]();
-}
-
-#else
-
-ISR(INT0_vect) {
     15be:	1f 92       	push	r1
     15c0:	0f 92       	push	r0
     15c2:	0f b6       	in	r0, 0x3f	; 63
@@ -3095,16 +2685,13 @@ ISR(INT0_vect) {
     15da:	bf 93       	push	r27
     15dc:	ef 93       	push	r30
     15de:	ff 93       	push	r31
-  if(intFunc[EXTERNAL_INT_0])
     15e0:	80 91 ff 07 	lds	r24, 0x07FF	; 0x8007ff <intFunc>
     15e4:	90 91 00 08 	lds	r25, 0x0800	; 0x800800 <intFunc+0x1>
     15e8:	89 2b       	or	r24, r25
     15ea:	29 f0       	breq	.+10     	; 0x15f6 <__vector_1+0x38>
-    intFunc[EXTERNAL_INT_0]();
     15ec:	e0 91 ff 07 	lds	r30, 0x07FF	; 0x8007ff <intFunc>
     15f0:	f0 91 00 08 	lds	r31, 0x0800	; 0x800800 <intFunc+0x1>
     15f4:	09 95       	icall
-}
     15f6:	ff 91       	pop	r31
     15f8:	ef 91       	pop	r30
     15fa:	bf 91       	pop	r27
@@ -3124,8 +2711,6 @@ ISR(INT0_vect) {
     1616:	18 95       	reti
 
 00001618 <__vector_2>:
-
-ISR(INT1_vect) {
     1618:	1f 92       	push	r1
     161a:	0f 92       	push	r0
     161c:	0f b6       	in	r0, 0x3f	; 63
@@ -3143,16 +2728,13 @@ ISR(INT1_vect) {
     1634:	bf 93       	push	r27
     1636:	ef 93       	push	r30
     1638:	ff 93       	push	r31
-  if(intFunc[EXTERNAL_INT_1])
     163a:	80 91 01 08 	lds	r24, 0x0801	; 0x800801 <intFunc+0x2>
     163e:	90 91 02 08 	lds	r25, 0x0802	; 0x800802 <intFunc+0x3>
     1642:	89 2b       	or	r24, r25
     1644:	29 f0       	breq	.+10     	; 0x1650 <__vector_2+0x38>
-    intFunc[EXTERNAL_INT_1]();
     1646:	e0 91 01 08 	lds	r30, 0x0801	; 0x800801 <intFunc+0x2>
     164a:	f0 91 02 08 	lds	r31, 0x0802	; 0x800802 <intFunc+0x3>
     164e:	09 95       	icall
-}
     1650:	ff 91       	pop	r31
     1652:	ef 91       	pop	r30
     1654:	bf 91       	pop	r27
@@ -3172,74 +2754,36 @@ ISR(INT1_vect) {
     1670:	18 95       	reti
 
 00001672 <USART_init>:
-
-
-
-void USART_init(void){
-	
-	UBRR0H = (uint8_t)(BAUD_PRESCALLER>>8);
-    1672:	10 92 c5 00 	sts	0x00C5, r1	; 0x8000c5 <__TEXT_REGION_LENGTH__+0x7f80c5>
-	UBRR0L = (uint8_t)(BAUD_PRESCALLER);
+    1672:	10 92 c5 00 	sts	0x00C5, r1	; 0x8000c5 <__DATA_REGION_ORIGIN__+0x65>
     1676:	87 e6       	ldi	r24, 0x67	; 103
-    1678:	80 93 c4 00 	sts	0x00C4, r24	; 0x8000c4 <__TEXT_REGION_LENGTH__+0x7f80c4>
-	UCSR0B = (1<<RXEN0)|(1<<TXEN0)|(1<<UCSZ02);
+    1678:	80 93 c4 00 	sts	0x00C4, r24	; 0x8000c4 <__DATA_REGION_ORIGIN__+0x64>
     167c:	8c e1       	ldi	r24, 0x1C	; 28
-    167e:	80 93 c1 00 	sts	0x00C1, r24	; 0x8000c1 <__TEXT_REGION_LENGTH__+0x7f80c1>
-	UCSR0C = ((1<<UCSZ00)|(1<<UCSZ01));
+    167e:	80 93 c1 00 	sts	0x00C1, r24	; 0x8000c1 <__DATA_REGION_ORIGIN__+0x61>
     1682:	86 e0       	ldi	r24, 0x06	; 6
-    1684:	80 93 c2 00 	sts	0x00C2, r24	; 0x8000c2 <__TEXT_REGION_LENGTH__+0x7f80c2>
+    1684:	80 93 c2 00 	sts	0x00C2, r24	; 0x8000c2 <__DATA_REGION_ORIGIN__+0x62>
     1688:	08 95       	ret
 
 0000168a <USART_send>:
-	}
-}
-
-void USART_send( unsigned char data){
-	
-	while(!(UCSR0A & (1<<UDRE0)));
     168a:	e0 ec       	ldi	r30, 0xC0	; 192
     168c:	f0 e0       	ldi	r31, 0x00	; 0
     168e:	90 81       	ld	r25, Z
     1690:	95 ff       	sbrs	r25, 5
     1692:	fd cf       	rjmp	.-6      	; 0x168e <USART_send+0x4>
-	UDR0 = data;
-    1694:	80 93 c6 00 	sts	0x00C6, r24	; 0x8000c6 <__TEXT_REGION_LENGTH__+0x7f80c6>
+    1694:	80 93 c6 00 	sts	0x00C6, r24	; 0x8000c6 <__DATA_REGION_ORIGIN__+0x66>
     1698:	08 95       	ret
 
 0000169a <USART_sendstr>:
-	UCSR0B = (1<<RXEN0)|(1<<TXEN0)|(1<<UCSZ02);
-	UCSR0C = ((1<<UCSZ00)|(1<<UCSZ01));
-}
-
-
-void USART_sendstr( unsigned char* str){
     169a:	cf 93       	push	r28
     169c:	df 93       	push	r29
     169e:	ec 01       	movw	r28, r24
-	int i =0;
-	
-	while (str[i] != 0x00)
     16a0:	88 81       	ld	r24, Y
     16a2:	88 23       	and	r24, r24
     16a4:	31 f0       	breq	.+12     	; 0x16b2 <USART_sendstr+0x18>
     16a6:	21 96       	adiw	r28, 0x01	; 1
-	{
-		USART_send(str[i]);
     16a8:	0e 94 45 0b 	call	0x168a	; 0x168a <USART_send>
-
-
-void USART_sendstr( unsigned char* str){
-	int i =0;
-	
-	while (str[i] != 0x00)
     16ac:	89 91       	ld	r24, Y+
     16ae:	81 11       	cpse	r24, r1
     16b0:	fb cf       	rjmp	.-10     	; 0x16a8 <USART_sendstr+0xe>
-	{
-		USART_send(str[i]);
-		i++;
-	}
-}
     16b2:	df 91       	pop	r29
     16b4:	cf 91       	pop	r28
     16b6:	08 95       	ret
